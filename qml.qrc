@@ -1,0 +1,32 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>audio/alarm.wav</file>
+        <file>audio/warning.wav</file>
+        <file>components/CircularGuage.qml</file>
+        <file>components/DialogPopUp.qml</file>
+        <file>components/Gauge.qml</file>
+        <file>components/Indicator.qml</file>
+        <file>components/ItemFrame.qml</file>
+        <file>components/LabelDigit.qml</file>
+        <file>components/LabelIndicator.qml</file>
+        <file>components/LabelSlider.qml</file>
+        <file>components/LabelSwitch.qml</file>
+        <file>components/LightIndication.qml</file>
+        <file>components/LinearScaleMulty.qml</file>
+        <file>components/LineScale.qml</file>
+        <file>components/RoundScale.qml</file>
+        <file>components/RoundScaleSmall.qml</file>
+        <file>image/needle.png</file>
+        <file>settings/colors.js</file>
+        <file>settings/image.js</file>
+        <file>settings/logic.js</file>
+        <file>settings/Strings.js</file>
+        <file>ControlsPanel.qml</file>
+        <file>EgtPanel.qml</file>
+        <file>EnginePanel.qml</file>
+        <file>IndicationPanel.qml</file>
+        <file>RpmPanel.qml</file>
+        <file>TcuPanel.qml</file>
+    </qresource>
+</RCC>
