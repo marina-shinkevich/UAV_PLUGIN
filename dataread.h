@@ -20,6 +20,9 @@
 class DataRead : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int aircraftSelection READ aircraftSelection WRITE setAircraftSelection NOTIFY aircraftSelectionChanged)
+    Q_PROPERTY(QString currentAircraftName READ currentAircraftName NOTIFY aircraftSelectionChanged)
+    
 public:
     explicit DataRead(QObject *parent = nullptr);
     QStringList datalist;
@@ -27,6 +30,10 @@ public:
     QUrl url;
     void startRequest(const QUrl &request);
     QMap<QString,QString> param;
+    
+    // Property getters
+    int aircraftSelection() const { return m_aircraftSelection; }
+    QString currentAircraftName() const { return m_aircraftSelection == 1 ? "UVH_VT_170" : "VT_25V1"; }
 
 private:
     QQuickView viewer;
@@ -35,9 +42,12 @@ private:
     QNetworkAccessManager manager;
     QNetworkReply *reply = nullptr;
     MandalaValues m_report;
+    MandalaValues m_report2;  // Второй самолет
+    int m_aircraftSelection = 1;  // 1 - первый самолет, 2 - второй самолет
     Settings m_settings;
     QTimer tmrRequest;
     QString data;
+    QString lastXmlData;
 
     bool f_openMsgView = false;
     bool httpRequestAborted;
@@ -68,7 +78,19 @@ public slots:
     void closeReportMsgView(void);
     void updateVariables(QString name, QVariant state);
 
+    // переключения между самолетами
+    void setAircraftSelection(int aircraft);
+    MandalaValues* currentReport(); 
+
+    // обработка данных для каждого 
+    void UVH_VT_170();
+    void VT_25V1();
+    
+    //  для принудительного обновления интерфейса
+    void refreshInterface();
+
 signals:
+    void aircraftSelectionChanged();
 
 };
 

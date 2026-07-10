@@ -28,5 +28,7 @@
         <file>IndicationPanel.qml</file>
         <file>RpmPanel.qml</file>
         <file>TcuPanel.qml</file>
+        <file>HeliFirstInterface.qml</file>
+        <file>HeliSecondInterface.qml</file>
     </qresource>
 </RCC>

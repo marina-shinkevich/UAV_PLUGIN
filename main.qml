@@ -1,89 +1,98 @@
-import QtQuick.Window 2.0
-import QtQuick 2.9
+import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
-import QtQuick.Controls.Material 2.1
-
-import "./components"
 import "./settings/colors.js" as Color
-import "./settings/Strings.js" as Str
-import "./settings/logic.js" as Logic
 
 ApplicationWindow {
-
-    property double scaleKoef: minimumWidth/minimumHeight
-
-    Material.theme: Material.Dark
-    Material.accent: Color.GREEN_1
-
+    id: mainWindow
+    
     visible: true
-    width: 1490
-    height: 834
-    minimumWidth: 1490
-    minimumHeight: 834
-    title:  qsTr("ECAM - Alpin (v1.1.9)")
-    color: Color.BLACK
+    width: 1600
+    height: 1000
+    title: "ECAM - Панель мониторинга"
+    color: Color.DARK_BLUE
+   
+ 
+    Rectangle {
+        id: topBar
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: 80
+        color: Color.RECTANGLE_BLUE
 
-    Component.onCompleted: {
-        pb.openReportMsgView()
+        RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: 20
+            anchors.rightMargin: 20
+            spacing: 15
 
-        x = Screen.width / 2 - width / 2
-        y = Screen.height / 2 - height / 2
+            Button {
+                id: heliButton1
+                text: "UVH_VT_70"
+                Layout.preferredWidth: 150; Layout.preferredHeight: 45
+                onClicked: pb.setAircraftSelection(1)
+                background: Rectangle {
+                    color: pb.aircraftSelection === 1 ? Color.WHITE : Color.NOT_ACTIVE
+                    radius: 6
+                }
+                contentItem: Text {
+                    text: parent.text
+                    color: pb.aircraftSelection === 1 ? "black" : "white"
+                    font.bold: pb.aircraftSelection === 1
+                    horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+                }
+            }
+
+            Button {
+                id: heliButton2
+                text: "VT_25V1"
+                Layout.preferredWidth: 150; Layout.preferredHeight: 45
+                onClicked: pb.setAircraftSelection(2)
+                background: Rectangle {
+                    color: pb.aircraftSelection === 2 ? Color.WHITE : Color.NOT_ACTIVE
+                    radius: 6
+                }
+                contentItem: Text {
+                    text: parent.text
+                    color: pb.aircraftSelection === 2 ? "black" : "white"
+                    font.bold: pb.aircraftSelection === 2
+                    horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+                }
+            }
+
+            Rectangle { Layout.preferredWidth: 1; Layout.preferredHeight: 30; opacity: 0.15 }
+
+            Text {
+                text: "Current Aircraft: " + pb.currentAircraftName 
+                color: Color.WHITE; font.pixelSize: 16; Layout.fillWidth: true
+            }
+        }
     }
 
-    onClosing: pb.closeReportMsgView()
+   
+    StackLayout {
+        id: stackLayout
+        anchors.top: topBar.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 20
 
-    ColumnLayout{
-        id: idMainItem
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        width: (parent.width > parent.height*scaleKoef) ? parent.height*scaleKoef : parent.width
-        height: (parent.width > parent.height*scaleKoef) ? parent.height : parent.width/scaleKoef
-        spacing: 0
+        currentIndex: pb.aircraftSelection - 1
 
-        IndicationPanel{
-            id: indication
+        // Интерфейс первого вертолета
+        HeliFirstInterface {
             Layout.fillWidth: true
-            Layout.preferredHeight: 110
-        }
-        RowLayout{
             Layout.fillHeight: true
-            Layout.fillWidth: true
-            spacing: 0
+            dataReport: report
 
-            TcuPanel{
-                id: tcu
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                width: 120
-            }
-            RpmPanel{
-                id: rpm
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                width: 230
-
-                onUpdateThrottle: pb.updateVariables(name, val);
-                onUpdateValue: pb.updateVariables(name, val);
-            }
-            EgtPanel{
-                id: egt
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                width: 120
-            }
-            ControlsPanel {
-                id: control
-                Layout.fillHeight: true
-                Layout.preferredWidth: 300
-                onUpdateValue: pb.updateVariables(name, val);
-            }
-        }
-        EnginePanel{
-            id: engine
-            Layout.fillHeight: true
-            Layout.fillWidth: true
+            onUpdateThrottle: pb.updateVariables(name, val)
         }
 
+        // Интерфейс второго вертолета 
+        HeliSecondInterface {
+            dataReport: report2 
+        }
     }
 }

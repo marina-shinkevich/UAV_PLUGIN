@@ -1,120 +1,170 @@
-import QtQuick 2.0
-import QtQuick.Controls 2.14
-import QtQuick.Layouts 1.0
-import "./components"
+import QtQuick 2.12
+import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.12
 import "./settings/colors.js" as Color
+import "./components"
 
-ItemFrame{
+Rectangle {
+    id: rpmRoot
+    
+    property var dataReport
+    signal throttleChanged(string name, real val)
 
-    signal updateThrottle(string name, real val)    
-    signal updateValue(string name, int val)
+    Layout.fillWidth: true
+    Layout.fillHeight: true
+    Layout.columnSpan: 2
+    color: "#1a2332"
+    radius: 10
+    border.color: "#2a3a4a"
+    border.width: 1
 
-    nameGroup: 'RPM'
+    Text {
+        id: headerText
+        text: "RPM"
+        color: "#6a8a9a"
+        font.bold: true
+        font.pixelSize: 17
+        anchors.top: parent.top
+        anchors.topMargin: 12
+        anchors.horizontalCenter: parent.horizontalCenter
+    }
 
-    RowLayout{
-        anchors{fill: parent; leftMargin: 30; rightMargin: 30; bottomMargin: 20}
-        spacing: 5
+    RowLayout {
+        anchors.top: headerText.bottom
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: 15
+        spacing: 100
 
-        Item{
+        // ПАНЕЛЬ 1:
+        ColumnLayout {
             Layout.fillHeight: true
-            Layout.fillWidth: true
-            implicitHeight: parent.height
-            implicitWidth: implicitHeight * 0.35
+            Layout.preferredWidth: 50
+            spacing: 10
 
-            ColumnLayout{
-                height: parent.height - 20
-                width: 50
-                anchors.centerIn: parent
-                spacing: 5
+            Text {
+                text: "% Th"
+                color: "#ffffff"
+                font.pixelSize: 13
+                Layout.alignment: Qt.AlignHCenter
+            }
 
-                Button{
-                    Layout.preferredHeight: 30
-                    Layout.fillWidth: true
-                    text: '+'
-                    focusPolicy: Qt.NoFocus
-                    onClicked: {
-                        if(Number(report.rcThrottle+0.01).toFixed(2) <= 1)
-                            updateThrottle("rc_throttle", Number(report.rcThrottle+0.01).toFixed(2))
-                    }
+            Button {
+                Layout.preferredHeight: 28
+                Layout.preferredWidth: 60
+                Layout.alignment: Qt.AlignHCenter
+                text: '+'
+                focusPolicy: Qt.NoFocus
+                onClicked: {
+                    var current = rpmRoot.dataReport ? rpmRoot.dataReport.ctrEngThr / 100.0 : 0
+                    var next = Number((current + 0.01).toFixed(2))
+                    if (next <= 1)
+                        rpmRoot.throttleChanged("ctr.eng.thr", next) 
                 }
-                LineScale{
-                    id: idRPMThrottle
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    nameScale: "% Thr"
-                    fTickVisible: true
-                    fLowLim: false
-                    fHighLim: false
-                    valLowLim: 10; valHighLim: 90
-                    valMin: 0; valMax: 100
-                    stepTick: 25
-                    fIntVal: true
-                    guage.indicatorWidth: 22
-                    valReal: report.rpmThrottle.toFixed(1)
+            }
+
+            Gauge {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.minimumHeight: 100
+
+                min: 0
+                max: 100
+                value: rpmRoot.dataReport ? rpmRoot.dataReport.ctrEngThr : 0
+                limMin: 0
+                limMax: 100
+                indicatorMainColor: "#4fc3f7"
+                tickInterval: 25
+                tickStep: 2
+                visibleTicks: true
+            }
+
+            Button {
+                Layout.preferredHeight: 28
+                Layout.preferredWidth: 60
+                Layout.alignment: Qt.AlignHCenter
+                text: '-'
+                focusPolicy: Qt.NoFocus
+                onClicked: {
+                    var current = rpmRoot.dataReport ? rpmRoot.dataReport.ctrEngThr / 100.0 : 0
+                    var next = Number((current - 0.01).toFixed(2))
+                    if (next >= 0)
+                        rpmRoot.throttleChanged("ctr.eng.thr", next)
                 }
-                Button{
-                    Layout.preferredHeight: 30
-                    Layout.fillWidth: true
-                    text: '-'
-                    focusPolicy: Qt.NoFocus
-                    onClicked: {
-                        if(Number(report.rcThrottle-0.01).toFixed(2) >= 0)
-                            updateThrottle("rc_throttle", Number(report.rcThrottle-0.01).toFixed(2))
-                    }
-                }
+            }
+
+            Text {
+                text: (rpmRoot.dataReport ? rpmRoot.dataReport.ctrEngThr.toFixed(2) : "0.00")
+                color: "#ffffff"
+                font.pixelSize: 13
+                font.bold: true
+                Layout.alignment: Qt.AlignHCenter
             }
         }
 
-        RoundScaleSmall{
-            id: idRPMEngine
+        // ПАНЕЛЬ 2: Шкала % Engine
+        RoundScaleSmall {
             Layout.fillHeight: true
-            Layout.fillWidth: true
-            Layout.topMargin: 15
-            Layout.bottomMargin: 5
-            nameScale: "% Engine"; colorOK: Color.GREEN_1
-            descriptionScale: report.rpmEngineReal
-            fIntVal: true
-            fLowAlarm: true; fHighAlarm: true
-            fLowLim: true;
-            valMax: settings.rpmMax;
-            valMaxAlarm: settings.rpmUpRed;
-            valHighLim: settings.rpmUpYellow;
-            valLowLim: settings.rpmDownYellow;
-            valMinAlarm: settings.rpmDownRed;
-            valMin: settings.rpmMin;
-            tickPrs: 4
-            fMirror: true
-            valReal: report.rpmEngine.toFixed(1)
-        }
-        RoundScaleSmall{
-            id: idMainRotor
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            Layout.topMargin: 15
-            Layout.bottomMargin: 5
-            nameScale: "% Rotor"; colorOK: Color.GREEN_1
-            descriptionScale: report.rpmRotorReal
-            fIntVal: true
-            fLowAlarm: true; fHighAlarm: true
-            fLowLim: true;
-            valMax: settings.rpmMax;
-            valMaxAlarm: settings.rpmUpRed;
-            valHighLim: settings.rpmUpYellow;
-            valLowLim: settings.rpmDownYellow;
-            valMinAlarm: settings.rpmDownRed;
-            valMin: settings.rpmMin;
-            tickPrs: 4
-            valReal: report.rpmRotor.toFixed(1)
-        }
-    }
+            Layout.fillWidth: false 
+            Layout.minimumWidth: 160
 
-    LabelSwitch{
-        id: idLightHead
-        anchors{right: parent.right; bottom: parent.bottom; margins: 13}
-        width: 100
-        height: 25
-        keyText: qsTr("Reserve")
-        value: report.reserveRpm
-        onValueTriggered: updateValue("sw_sw4", flag)
+            nameScale: "% Engine"
+            descriptionScale: rpmRoot.dataReport ? rpmRoot.dataReport.engRpm.toFixed(0) : "0"
+
+            valMin: 88
+            valMax: 112
+            valReal: rpmRoot.dataReport ? rpmRoot.dataReport.engRpm : 88
+            fLowLim: true
+            fHighLim: true
+            valLowLim: 96
+            valHighLim: 104
+            fLowAlarm: true
+            fHighAlarm: true
+            valMinAlarm: 90
+            valMaxAlarm: 110
+
+            colorOK: Color.GREEN
+            colorWarn: Color.YELLOW_TEXT
+            colorAlarm: Color.RED
+            fIntVal: true
+            tickPrs: 4
+
+            fMirror: true
+            visibleIndicator: false
+        }
+
+        // ПАНЕЛЬ 3: Шкала % Rotor
+        RoundScaleSmall {
+            Layout.fillHeight: true
+            Layout.fillWidth: false
+        // ПАНЕЛЬ 1:
+            Layout.minimumWidth: 120
+
+            nameScale: "% Rotor"
+            descriptionScale: rpmRoot.dataReport ? rpmRoot.dataReport.gboxRpm.toFixed(0) : "0"
+
+            valMin: 88
+            valMax: 112
+            valReal: rpmRoot.dataReport ? rpmRoot.dataReport.gboxRpm : 88
+
+            fLowLim: true
+            fHighLim: true
+            valLowLim: 96
+            valHighLim: 104
+            fLowAlarm: true
+            fHighAlarm: true
+            valMinAlarm: 90
+            valMaxAlarm: 110
+
+            colorOK: "#42d335"
+            colorWarn: Color.YELLOW_TEXT
+            colorAlarm: Color.RED
+            fIntVal: true
+            tickPrs: 4
+
+            fMirror: false
+            visibleIndicator: false
+        }
     }
 }
